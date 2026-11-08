@@ -22,6 +22,10 @@ These are observations of local development builds, not a claim that all plug-in
 
 ## Release and permission-continuity checks
 
+The public 0.3.0/build 4 DMG and feed passed anonymous download, signature, metadata, architecture and complete license-notice verification. The verified app was launched from a user-writable test location on macOS 27.2. Its own status reported microphone access, both routes processing, increasing callback counters and a compatible HAL requiring no setup. The microphone meter showed signal; Zoom's speaker test produced system-chain output. Saved Apple/Waves effects were preserved.
+
+The initial system-chain start blocked inside Core Audio while the settings pane still displayed an enabled legacy grant. Adding the new signed app through the system-audio privacy pane resolved the block; both chains then ran together at 48 kHz without restarting coreaudiod. This observation covers the one-time ad hoc identity migration, not update continuity. Applications replacement and a real Sparkle update remain separate checks.
+
 Release validation includes the Actions build/publish result and anonymous downloaded DMG/feed verification. The initial permanent-identity migration and subsequent real Sparkle update are separate checks: query `--status` in the installed running app, grant permissions once for the permanent identity, update to a different executable through Sparkle, and verify the grant and live routes without regranting. Record observed results in the release work summary; do not infer continuity from direct CLI permission checks or certificate inspection alone.
 
 ## Remaining hardware coverage
