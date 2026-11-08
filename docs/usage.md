@@ -24,6 +24,8 @@ Microphone access is requested when enabling Microphone; system audio access is 
 
 Versions 0.2 and earlier were local development builds with ad hoc signatures and PKG-based app installation. Moving to the release certificate can require one permission regrant. Replace the old copy once, preserving the same bundle ID. An app that remains owned by root can require authorization for replacement; a normal user-owned drag installation avoids that cause of repeated update prompts. Signed app updates retain the pinned identity; see the tested scope in [validation](validation.md).
 
+During this one-time signature migration, an old enabled system-audio permission can still refer to the development identity. On macOS 27.2 this blocked the first System Audio start. If that occurs, use **Force Quit** for SoundLane, then add the new installed app under **Privacy & Security → Screen & System Audio Recording → System Audio Recording Only → +** and relaunch it. macOS can request administrator authorization for that settings change. Do not reinstall the HAL component to repair an app privacy grant.
+
 ## Saved settings and removal
 
 Configuration is local JSON at `~/Library/Application Support/SoundLane/Configuration.json`. It stores selected device UIDs, effect identifiers/order/fullState, effect bypass, and gain. It does not persist chain on/off, Mute, or Bypass All across a fresh launch. Updates use Sparkle preferences stored by macOS; Settings changes are respected.

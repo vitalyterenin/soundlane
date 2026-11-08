@@ -28,7 +28,7 @@ and [Apple Toolbars](https://developer.apple.com/design/human-interface-guidelin
 Validation: restored the existing Apple/Waves chains; enabled both chains; switched
 sidebar destinations while processing continued; searched and selected an Audio
 Unit and cancelled the sheet; opened and closed the native Dynamics Processor
-editor. Existing 11 lifecycle scenarios and DSP smoke test pass.
+editor. Existing lifecycle/component scenarios and DSP smoke test pass.
 
 Software update controls use a native Settings form and standard Sparkle windows.
 The virtual microphone setup appears only when the component is missing or outdated;
