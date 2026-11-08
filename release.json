@@ -1,0 +1,13 @@
+{
+  "version": "0.3.0",
+  "build": "4",
+  "id": "soundlane",
+  "name": "SoundLane",
+  "githubRepository": "vitalyterenin/soundlane",
+  "feedURL": "https://vitalyterenin.github.io/soundlane/appcast.xml",
+  "downloadURL": "https://github.com/vitalyterenin/soundlane/releases/latest/download/SoundLane.dmg",
+  "publicEDKey": "dfFOGPMMt31reQuSbT/6fK8Hq621W0Z7n946GZOXX60=",
+  "license": "Proprietary",
+  "firstReleaseBuild": "4",
+  "codeSigningCertificateSHA256": "cd83fe55a2ef6dddbadd622bd67938463707a26ee6406b3472181ce8d7ffe8bb"
+}

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>en</string>
+	<key>CFBundleDisplayName</key>
+	<string>SoundLane</string>
+	<key>CFBundleExecutable</key>
+	<string>SoundLane</string>
+	<key>CFBundleIconFile</key>
+	<string>AppIcon</string>
+	<key>CFBundleIdentifier</key>
+	<string>in.teren.SoundLane</string>
+	<key>CFBundleLocalizations</key>
+	<array>
+		<string>en</string>
+	</array>
+	<key>CFBundleName</key>
+	<string>SoundLane</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>LSMinimumSystemVersion</key>
+	<string>14.2</string>
+	<key>NSAudioCaptureUsageDescription</key>
+	<string>SoundLane applies Audio Unit effects to system audio and plays it through your speakers or headphones. Audio is not recorded.</string>
+	<key>NSHighResolutionCapable</key>
+	<true/>
+	<key>NSHumanReadableCopyright</key>
+	<string>Copyright © 2026 Vitaly Terenin.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>SoundLane processes your microphone with Audio Unit effects and makes it available to apps such as Zoom. Audio is not recorded or uploaded.</string>
+</dict>
+</plist>
