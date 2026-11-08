@@ -141,6 +141,12 @@ import AVFoundation
         mic.consecutiveRenderErrors = 9; app.checkRenderHealth(app.microphone)
         expectFalse(app.microphone.requestedEnabled) // a failing AU on a valid route stops
     }
+    func testCompatibleComponentDoesNotNeedReinstallation() async {
+        expectTrue(AudioComponentInstallation(installedBuild: nil, bundledBuild: 1).needsSetup)
+        expectTrue(AudioComponentInstallation(installedBuild: 1, bundledBuild: 2).needsSetup)
+        expectFalse(AudioComponentInstallation(installedBuild: 1, bundledBuild: 1).needsSetup)
+        expectFalse(AudioComponentInstallation(installedBuild: 2, bundledBuild: 1).needsSetup)
+    }
     func testStalledCallbackStopsWithoutCallingSilenceAFailure() async {
         await enableBoth()
         date.addTimeInterval(2); mic.callbackCount += 100; system.callbackCount += 100; app.checkCallbacks()
@@ -156,6 +162,7 @@ func expectEqual<T: Equatable>(_ a: T, _ b: T, file: StaticString = #file, line:
 func expectNotNil<T>(_ value: T?, file: StaticString = #file, line: UInt = #line) { precondition(value != nil, "Expected non-nil", file: file, line: line) }
 @main struct StabilityTestRunner {
     @MainActor static func main() async throws {
+        do { let test = LifecycleTests(); try await test.setUp(); await test.testCompatibleComponentDoesNotNeedReinstallation(); try await test.tearDown(); print("PASS: testCompatibleComponentDoesNotNeedReinstallation") }
         do { let test = LifecycleTests(); try await test.setUp(); await test.testDeviceLossWithRenderErrorsKeepsRecoveryIntent(); try await test.tearDown(); print("PASS: testDeviceLossWithRenderErrorsKeepsRecoveryIntent") }
         do { let test = LifecycleTests(); try await test.setUp(); await test.testDuplicateSleepAndWakeRestoreOnlyRequestedRoutes(); try await test.tearDown(); print("PASS: testDuplicateSleepAndWakeRestoreOnlyRequestedRoutes") }
         do { let test = LifecycleTests(); try await test.setUp(); await test.testOffDuringWakeCancelsQueuedStart(); try await test.tearDown(); print("PASS: testOffDuringWakeCancelsQueuedStart") }

@@ -6,7 +6,7 @@ Local environment: Apple Silicon MacBook Pro, macOS 27.2, Swift 6.4.2 Command Li
 
 C++ checks with ASan/UBSan cover format, roundtrip, independent readers, wraparound, stale data, concurrent access, finite values, and silence after stop/restart. The real AVAudioEngine manual realtime path is checked with a −6 dB EQ, bypass, mute, and synthetic duplex channel mapping. Real HAL topology tests validate separate outputs and physical input availability.
 
-Eleven lifecycle scenarios check the production AppModel with fake HAL/clock dependencies, including duplicate sleep/wake, cancellation, delayed return, changed IDs/formats, recovery timeout, missing virtual destination, late permission replies, and stalled callbacks. Publication checks use isolated fake GitHub/network clients and verify artifact identity, state monotonicity, bounded retries, cleanup ordering, signature requirements and notices.
+Twelve lifecycle/component scenarios check the production AppModel with fake HAL/clock dependencies, including duplicate sleep/wake, cancellation, delayed return, changed IDs/formats, recovery timeout, missing virtual destination, late permission replies, stalled callbacks, and compatible component versions that must not request reinstallation. Publication checks use isolated fake GitHub/network clients and verify artifact identity, state monotonicity, bounded retries, cleanup ordering, signature requirements and notices.
 
 ## Hardware observations before first public release
 

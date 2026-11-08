@@ -8,4 +8,4 @@ Configuration is saved locally as described in [usage](usage.md#saved-settings-a
 
 Sparkle contacts the app's signed feed at `https://vitalyterenin.github.io/soundlane/appcast.xml` and downloads updates from GitHub Releases. GitHub receives the ordinary connection metadata needed to serve those requests. System profiling and delta archives are disabled. Automatic checks and installation can be disabled in **SoundLane → Settings…**; manual checks remain available.
 
-The `--status` developer command makes a read-only local notification request to the running app. It reports its version, permission state and numeric audio callback counters. It does not record audio, start processing or contact a server.
+The `--status` developer command makes a read-only local notification request to the running app. It reports its version, permission state, component versions and numeric audio callback counters. It does not record audio, start processing or contact a server.

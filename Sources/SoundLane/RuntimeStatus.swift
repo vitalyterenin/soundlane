@@ -22,6 +22,8 @@ import AVFoundation
                     "microphoneCallbacks": NSNumber(value: model.microphone.engine.callbackCount),
                     "virtualMicrophoneAvailable": model.virtualMicrophone != nil,
                     "componentNeedsSetup": model.audioComponent.needsSetup,
+                    "componentInstalledBuild": model.audioComponent.installedBuild ?? 0,
+                    "componentBundledBuild": model.audioComponent.bundledBuild,
                 ]
                 DistributedNotificationCenter.default().postNotificationName(response, object: id, userInfo: data, deliverImmediately: true)
             }

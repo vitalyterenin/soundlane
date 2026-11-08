@@ -22,7 +22,8 @@ class Response:
 class PreviousFeedTests(unittest.TestCase):
     def test_first_release_can_bootstrap_only_when_both_objects_are_missing(self):
         missing = HTTPError('url', 404, 'missing', {}, None)
-        with tempfile.TemporaryDirectory() as directory, patch.object(release.urllib.request, 'urlopen', side_effect=[missing,missing]) as read:
+        data=release.config();data['build']=data['firstReleaseBuild']
+        with patch.object(release, 'config', return_value=data), tempfile.TemporaryDirectory() as directory, patch.object(release.urllib.request, 'urlopen', side_effect=[missing,missing]) as read:
             path = Path(directory)/'previous.xml'
             release.previous(path)
             self.assertEqual(read.call_count, 2)
@@ -33,7 +34,8 @@ class PreviousFeedTests(unittest.TestCase):
             with tempfile.TemporaryDirectory() as directory, patch.object(release,'config',return_value=data), patch.object(release.urllib.request,'urlopen',side_effect=error):
                 with self.assertRaises((ValueError,URLError)):release.previous(Path(directory)/'previous.xml')
     def test_existing_release_prevents_bootstrap(self):
-        with tempfile.TemporaryDirectory() as directory, patch.object(release.urllib.request,'urlopen',side_effect=[HTTPError('url',404,'missing',{},None),Response(b'{}')]):
+        data=release.config();data['build']=data['firstReleaseBuild']
+        with patch.object(release, 'config', return_value=data), tempfile.TemporaryDirectory() as directory, patch.object(release.urllib.request,'urlopen',side_effect=[HTTPError('url',404,'missing',{},None),Response(b'{}')]):
             with self.assertRaisesRegex(ValueError,'published release'):release.previous(Path(directory)/'previous.xml')
     def test_previous_feed_records_exact_bytes(self):
         body=b'<rss><channel/></rss>'
