@@ -1,0 +1,106 @@
+name: Release SoundLane
+
+on:
+  pull_request:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: soundlane-stable-release
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - name: Validate release identity and tag
+        env:
+          RELEASE_TAG: ${{ github.ref_type == 'tag' && github.ref_name || '' }}
+        run: python3 scripts/release.py validate
+      - name: Import persistent release signing identity
+        if: github.event_name != 'pull_request'
+        env:
+          SOUNDLANE_SIGNING_P12: ${{ secrets.SOUNDLANE_SIGNING_P12 }}
+          SOUNDLANE_SIGNING_PASSWORD: ${{ secrets.SOUNDLANE_SIGNING_PASSWORD }}
+        run: python3 scripts/signing.py import-ci --keychain "$RUNNER_TEMP/soundlane-release.keychain-db"
+      - name: Test runtime behavior and publication safety
+        run: |
+          bash scripts/test.sh
+          bash scripts/test-stability.sh
+          python3 -m unittest discover -s Tests/Release -v
+      - name: Build for Apple Silicon
+        env:
+          SOUNDLANE_OUTPUT_DIR: ${{ runner.temp }}/SoundLane
+        run: bash scripts/build-app.sh
+      - name: Check built app
+        run: |
+          "$RUNNER_TEMP/SoundLane/SoundLane.app/Contents/MacOS/SoundLane" --self-test
+      - name: Prepare signed DMG and feed
+        if: github.event_name != 'pull_request'
+        env:
+          SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
+        run: |
+          test -n "$SPARKLE_PRIVATE_KEY"
+          tools="$(bash scripts/sparkle-tools.sh)"
+          python3 scripts/release.py previous "$RUNNER_TEMP/previous.xml"
+          previous_args=()
+          if [[ -f "$RUNNER_TEMP/previous.xml" ]]; then previous_args+=(--previous "$RUNNER_TEMP/previous.xml"); fi
+          python3 scripts/release.py package \
+            --app "$RUNNER_TEMP/SoundLane/SoundLane.app" --output "$RUNNER_TEMP/release" \
+            --tools "$tools" "${previous_args[@]}"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: github.event_name != 'pull_request'
+        with:
+          name: soundlane-release
+          path: ${{ runner.temp }}/release/
+          if-no-files-found: error
+          retention-days: 14
+      - name: Remove temporary signing keychain
+        if: always() && github.event_name != 'pull_request'
+        run: |
+          if [[ -f "$RUNNER_TEMP/soundlane-release.keychain-db" ]]; then
+            security delete-keychain "$RUNNER_TEMP/soundlane-release.keychain-db"
+          fi
+
+  publish:
+    if: github.ref_type == 'tag'
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: soundlane-release
+          path: release
+      - name: Publish and verify GitHub DMG
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/publish.py publish release
+      - uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4
+        with:
+          path: release/pages
+      - name: Deploy signed update feed
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4
+        id: deployment
+      - name: Verify public update and remove older DMGs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/publish.py verify release
