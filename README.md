@@ -42,6 +42,6 @@ Audio stays in the local processing path; SoundLane does not record it or upload
 
 ## Development
 
-See [build and test instructions](docs/development.md), [architecture](docs/architecture.md), [validation](docs/validation.md), and [release operations](docs/releases.md).
+See [build and test instructions](docs/development.md), [architecture](docs/architecture.md), [validation](docs/validation.md), [release operations](docs/releases.md), and the [refactoring audit](docs/refactoring-review.md).
 
 Maintained by Vitaly Terenin. The original SoundLane source and application are proprietary; **all rights reserved**. Publishing this repository does not grant an open-source license. [LICENSE](LICENSE) and [third-party notices](THIRD_PARTY_NOTICES.md) describe the applicable terms.

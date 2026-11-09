@@ -147,6 +147,53 @@ import AVFoundation
         expectFalse(AudioComponentInstallation(installedBuild: 1, bundledBuild: 1).needsSetup)
         expectFalse(AudioComponentInstallation(installedBuild: 2, bundledBuild: 1).needsSetup)
     }
+    private func launchWithSettings(at url: URL) async -> AppModel {
+        let model = AppModel(settings: url, systemEngine: FakePipeline(), microphoneEngine: FakePipeline(),
+                             devices: { [] })
+        let deadline = ContinuousClock.now.advanced(by: .seconds(3))
+        while model.restoring && ContinuousClock.now < deadline { await drain() }
+        expectFalse(model.restoring)
+        return model
+    }
+    func testUnreadableSettingsSurviveSaveAndShutdown() async throws {
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        let url = directory.appendingPathComponent("Configuration.json")
+        for fixture in ["{\"system\":", "{\"formatVersion\":999,\"preset\":\"keep\"}"] {
+            let original = Data(fixture.utf8)
+            try original.write(to: url)
+            let model = await launchWithSettings(at: url)
+            defer { model.shutdown() }
+            expectNotNil(model.restoreMessage)
+
+            model.save()
+            let afterCheckpoint = try Data(contentsOf: url)
+            expectEqual(afterCheckpoint, original)
+
+            model.shutdown()
+            let afterShutdown = try Data(contentsOf: url)
+            expectEqual(afterShutdown, original)
+        }
+    }
+    func testSettingsSaveOnFirstLaunchAndAfterRestore() async throws {
+        let url = directory.appendingPathComponent("Configuration.json")
+        let first = await launchWithSettings(at: url)
+        defer { first.shutdown() }
+        expectTrue(first.restoreMessage == nil)
+        first.system.gainDB = -7
+        first.shutdown()
+
+        let second = await launchWithSettings(at: url)
+        defer { second.shutdown() }
+        expectTrue(second.restoreMessage == nil)
+        expectEqual(second.system.gainDB, -7)
+        second.microphone.gainDB = 3
+        second.shutdown()
+
+        let third = await launchWithSettings(at: url)
+        defer { third.shutdown() }
+        expectEqual(third.system.gainDB, -7)
+        expectEqual(third.microphone.gainDB, 3)
+    }
     func testStalledCallbackStopsWithoutCallingSilenceAFailure() async {
         await enableBoth()
         date.addTimeInterval(2); mic.callbackCount += 100; system.callbackCount += 100; app.checkCallbacks()
@@ -162,6 +209,20 @@ func expectEqual<T: Equatable>(_ a: T, _ b: T, file: StaticString = #file, line:
 func expectNotNil<T>(_ value: T?, file: StaticString = #file, line: UInt = #line) { precondition(value != nil, "Expected non-nil", file: file, line: line) }
 @main struct StabilityTestRunner {
     @MainActor static func main() async throws {
+        do {
+            let test = LifecycleTests()
+            try await test.setUp()
+            try await test.testUnreadableSettingsSurviveSaveAndShutdown()
+            try await test.tearDown()
+            print("PASS: testUnreadableSettingsSurviveSaveAndShutdown")
+        }
+        do {
+            let test = LifecycleTests()
+            try await test.setUp()
+            try await test.testSettingsSaveOnFirstLaunchAndAfterRestore()
+            try await test.tearDown()
+            print("PASS: testSettingsSaveOnFirstLaunchAndAfterRestore")
+        }
         do { let test = LifecycleTests(); try await test.setUp(); await test.testCompatibleComponentDoesNotNeedReinstallation(); try await test.tearDown(); print("PASS: testCompatibleComponentDoesNotNeedReinstallation") }
         do { let test = LifecycleTests(); try await test.setUp(); await test.testDeviceLossWithRenderErrorsKeepsRecoveryIntent(); try await test.tearDown(); print("PASS: testDeviceLossWithRenderErrorsKeepsRecoveryIntent") }
         do { let test = LifecycleTests(); try await test.setUp(); await test.testDuplicateSleepAndWakeRestoreOnlyRequestedRoutes(); try await test.tearDown(); print("PASS: testDuplicateSleepAndWakeRestoreOnlyRequestedRoutes") }

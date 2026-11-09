@@ -104,6 +104,7 @@ private struct SavedConfiguration: Codable { var system: SavedLane; var micropho
     private var editorWindows: [UUID: NSWindow] = [:]
     private(set) var sleeping = false
     private var shuttingDown = false
+    private var settingsReadFailed = false
     private let enumerateDevices: () -> [RouteDevice]
     private let authorizeMicrophone: () async -> Bool
     private let now: () -> Date
@@ -368,7 +369,7 @@ private struct SavedConfiguration: Codable { var system: SavedLane; var micropho
         }
     }
     func save() {
-        guard !restoring else { return }
+        guard !restoring, !settingsReadFailed else { return }
         func saved(_ lane: Lane) -> SavedLane {
             SavedLane(deviceUID: lane.deviceUID, effects: lane.effects.map(\.record), gainDB: lane.gainDB)
         }
@@ -380,7 +381,6 @@ private struct SavedConfiguration: Codable { var system: SavedLane; var micropho
     }
     private func restore() async {
         defer { restoring = false }
-        guard FileManager.default.fileExists(atPath: settingsURL.path) else { return }
         do {
             let config = try JSONDecoder().decode(SavedConfiguration.self, from: Data(contentsOf: settingsURL))
             for (lane, saved) in [(system, config.system), (microphone, config.microphone)] {
@@ -400,7 +400,12 @@ private struct SavedConfiguration: Codable { var system: SavedLane; var micropho
                     }
                 }
             }
-        } catch { restoreMessage = "Could not read saved settings: \(error.localizedDescription)" }
+        } catch CocoaError.fileReadNoSuchFile {
+            return
+        } catch {
+            settingsReadFailed = true
+            restoreMessage = "Could not read saved settings. Saving is paused for this session. \(error.localizedDescription)"
+        }
     }
     func shutdown() {
         guard !shuttingDown else { return }
