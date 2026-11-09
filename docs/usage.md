@@ -30,4 +30,6 @@ During this one-time signature migration, an old enabled system-audio permission
 
 Configuration is local JSON at `~/Library/Application Support/SoundLane/Configuration.json`. It stores selected device UIDs, effect identifiers/order/fullState, effect bypass, and gain. It does not persist chain on/off, Mute, or Bypass All across a fresh launch. Updates use Sparkle preferences stored by macOS; Settings changes are respected.
 
+If SoundLane cannot read an existing configuration, it shows a warning and pauses saving for that session to protect the original file. Restore a readable configuration and relaunch to resume saving.
+
 To remove SoundLane, quit it and move its installed app to Trash. To remove the virtual device too, delete only `/Library/Audio/Plug-Ins/HAL/SoundLane.driver` with administrator authorization, then restart. Optional preferences are in SoundLane's Application Support folder and its `in.teren.SoundLane` preference domain. Do not remove other audio drivers.

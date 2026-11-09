@@ -18,7 +18,7 @@ Local builds use ad hoc signatures and cannot pass release packaging. Do not rep
 ## Checks
 
 - `test.sh`: C++ ring/driver checks with AddressSanitizer and UndefinedBehaviorSanitizer, then the actual realtime manual AU graph, EQ, bypass, mute, and channel mapping. No microphone recording or live audio I/O.
-- `test-stability.sh`: the actual AppModel with fake device/pipeline snapshots and a test clock. Tests duplicate sleep/wake, cancellation, missing/changed devices, recovery deadlines, virtual-device restart, late permissions, stalled callbacks, and error/device-loss ordering. It uses a standalone assertion runner because Command Line Tools may not include XCTest.
+- `test-stability.sh`: the actual AppModel with fake device and pipeline dependencies and a test clock. Covers sleep and wake, device recovery, late permissions, callback health, and compatible component versions. Temporary JSON fixtures exercise save protection after failed decoding and normal settings round trips. It uses a standalone assertion runner because Command Line Tools may not include XCTest.
 - `Tests/Release`: isolated fake-network publication checks, certificate requirements, license inclusion, dependency notices, and first-release bootstrap rules. They do not publish live files.
 - `test-hal-topology.sh`: optional real HAL topology test. Requires an installed SoundLane component and built-in Mac input/output devices. It creates/destroys private aggregates without starting I/O or capturing audio.
 
